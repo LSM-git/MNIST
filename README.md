@@ -27,7 +27,7 @@ Such dataset can be found on the following kaggle url: https://www.kaggle.com/da
 Further details of the implementation are discussed below.
 At the end of the training, the program provides a graph showing the error vs the epochs. 
 
-> **Note**  
+> [!NOTE]
 > To skip training, run the program with the `--no-training` option to use the weights and biases stored in the `parameters.pkl` file.  
 > This file contains the weights and biases obtained during my training.
 
