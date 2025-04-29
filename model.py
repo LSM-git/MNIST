@@ -15,28 +15,34 @@ Classify digits from 0-9
 '''
 
 n = [28*28, 128, 10]
-EPOCHS = 250
-TRAINING_DIRECTORY = "training"
-PARAM_FILE = "parameters.pkl"
+EPOCHS = 5
+TRAINING_DIRECTORY = "train"
+PARAM_FILE = "./parameters.pkl"
 
 class Parameters:
     def __init__(self):
       # Define the layers and initialise weights and biases 
-      self.W1 = np.random.rand(n[1], n[0])
-      self.W2 = np.random.rand(n[2], n[1])
-      self.b1 = np.random.rand(n[1], 1)
-      self.b2 = np.random.rand(n[2], 1)
+      self.W1 = np.random.rand(n[1], n[0]) * 0.01
+      self.W2 = np.random.rand(n[2], n[1]) * 0.01
+      self.b1 = np.zeros((n[1], 1))
+      self.b2 = np.zeros((n[2], 1))
 
     def get_parameters(self):
         return self.W1, self.W2, self.b1, self.b2
 
+    def update_parameters(self, W1, W2, b1, b2):
+        self.W1 = W1
+        self.W2 = W2
+        self.b1 = b1 
+        self.b2 = b2
+    
 def sigmoid(x):
     '''
     Activation function for hidden layer.
     Keeps the values between 0 and 1.
     Args:
       x: A 28x28-dimensional vector containing the computations of the input layer
-    Returns: The result of applying the sigmoid function to x component-wise 
+    Returns: The result of applying the sigmoid function to x (component-wise) 
     '''
     return 1/(1+np.exp(-x))
 
@@ -47,6 +53,7 @@ def softmax(z: np.array) -> np.array:
       z: A 128-dimensional vector containing the computations of the hidden layer
     Returs: A 10 dimensional vector where each component is between 0 and 1
     '''
+    z = z - np.max(z)
     expVector = np.exp(z)
     return expVector / np.sum(expVector)
 
@@ -55,7 +62,7 @@ def imageToVector(image_path: str):
     Transforms a black and white image to a numpy array (vector)
     Args:
       image_path (str): Path to the image to transform
-    Returns: A 28x28 dimensional vector containing the pixel values of the image.
+    Returns: A 28^2 dimensional vector containing the pixel values of the image.
     '''
     return np.resize(np.array(Image.open(image_path))/255, (n[0],1))
 
@@ -107,7 +114,7 @@ def backpropagation(y, y_hat, V, W2, X):
     dC_db2 = dC_dZ # 10 dim vector
     
     # Hidden layer 
-    dC_dT = (W2.T @ dC_dZ) * (V * (np.ones((n[1], 1)) - V)) # 10 x 128 matrix
+    dC_dT = (W2.T @ dC_dZ) * (V * (1 - V)) # 10 x 128 matrix
 
     dC_dW1 = dC_dT @ X.T # 128 x 784 matrix
     dC_db1 = dC_dT # 128 dim vector
@@ -115,37 +122,40 @@ def backpropagation(y, y_hat, V, W2, X):
     return dC_dW2, dC_dW1, dC_db2, dC_db1
 
 
-def train(params: Parameters):
-    '''
-    Train function for model.
-    '''
-    global n
-    W1, W2, b1, b2 = params.get_parameters()
-
+def train(params):
+    """
+    Training function
+    """
     alpha = 0.01
     costs = []
-    for e in range(EPOCHS):
-        num = e%10
-        print(f"Starting epoch: {e}")
+    W1,W2,b1,b2 = params.get_parameters()
 
-        # Choose a random digit image
-        path = random.choice(os.listdir(f"./{TRAINING_DIRECTORY}/{e%10}"))
-        X = imageToVector(f"./{TRAINING_DIRECTORY}/{num}/{path}")
+    dataset = []
+    for digit in range(10):
+      for fn in os.listdir(f"train/{digit}"):
+        dataset.append((f"train/{digit}/{fn}", digit))
 
-        y_hat, v = feedforward(X, params)
-        y = np.array([0]*num + [1] + [0]*(9-num))
+    for epoch in range(EPOCHS):
+      random.shuffle(dataset)
+      for path, label in dataset:
+        X = imageToVector(path)
+        y_hat, V = feedforward(X, params)
+        y = np.zeros((10,1)); y[label,0] = 1
 
-        error = costFunction(y, y_hat)
-        costs.append(error)
+        cost = costFunction(y, y_hat)
+        costs.append(cost)
 
-        dC_dW2, dC_dW1, dC_db2, dC_db1 = backpropagation(y,y_hat, v, W2, X)
+        dW2, dW1, db2, db1 = backpropagation(y, y_hat, V, W2, X)
+        W2 -= alpha * dW2
+        b2 -= alpha * db2
+        W1 -= alpha * dW1
+        b1 -= alpha * db1
 
-        W2 -= alpha * dC_dW2
-        b2 -= alpha * dC_db2
+        params.update_parameters(W1,W2,b1,b2)
 
-        W1 -= alpha * dC_dW1
-        b1 -= alpha * dC_db1
-    return costs   
+      print(f"Epoch {epoch} – average error: {np.mean(costs[-len(dataset):])}")
+
+    return costs
 
 def main():
     if '--no-training' in sys.argv:
@@ -163,15 +173,17 @@ def main():
 
       # Show error graph
       ax = plt.gca()
-      ax.set_xlim([0, EPOCHS])
+      ax.set_xlim([0, EPOCHS * 10])
       ax.set_ylim([-0.2, 6])
 
-      xs = [x for x in range(EPOCHS)]
+      xs = [x for x in range(EPOCHS * 10)]
       plt.plot(xs, costs)
       plt.show()
 
     for image in sys.argv[1:]:
-      print(feedforward(imageToVector(image), params)[0])
+      output = feedforward(imageToVector(image), params)[0] 
+      print(output)
+      print(f"Prediction: {output.argmax(axis=0)}")
 
 if __name__ == '__main__':
     main()

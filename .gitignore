@@ -1,5 +1,6 @@
 *
-!ANN.py
+!model.py
 !parameters.pkl
 !.gitignore
 !README.md
+!setup.py
