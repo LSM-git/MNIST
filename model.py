@@ -15,7 +15,7 @@ Classify digits from 0-9
 '''
 
 n = [28*28, 128, 10]
-EPOCHS = 5
+EPOCHS = 1
 TRAINING_DIRECTORY = "train"
 PARAM_FILE = "./parameters.pkl"
 
@@ -130,11 +130,13 @@ def train(params):
     costs = []
     W1,W2,b1,b2 = params.get_parameters()
 
+    # Create dataset
     dataset = []
     for digit in range(10):
       for fn in os.listdir(f"train/{digit}"):
         dataset.append((f"train/{digit}/{fn}", digit))
 
+    # Train over the data
     for epoch in range(EPOCHS):
       random.shuffle(dataset)
       for path, label in dataset:
@@ -173,10 +175,10 @@ def main():
 
       # Show error graph
       ax = plt.gca()
-      ax.set_xlim([0, EPOCHS * 10])
+      ax.set_xlim([0, len(costs)])
       ax.set_ylim([-0.2, 6])
 
-      xs = [x for x in range(EPOCHS * 10)]
+      xs = [x for x in range(len(costs))]
       plt.plot(xs, costs)
       plt.show()
 
