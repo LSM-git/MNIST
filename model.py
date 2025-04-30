@@ -1,6 +1,6 @@
 # Main file for the computations of the neural network
 
-import os, random, pickle, sys
+import os, random, dill, sys
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
@@ -15,7 +15,7 @@ Classify digits from 0-9
 '''
 
 n = [28*28, 128, 10]
-EPOCHS = 1
+EPOCHS = 10
 TRAINING_DIRECTORY = "train"
 PARAM_FILE = "./parameters.pkl"
 
@@ -164,14 +164,14 @@ def main():
         sys.argv.remove('--no-training')
         # Load parameters
         with open(PARAM_FILE, 'rb') as param_file:
-            params =pickle.load(param_file)
+           params = dill.load(param_file)
     else:
       params = Parameters()
       costs = train(params)
 
       # Serialize parameters
       with open(PARAM_FILE, 'wb') as param_file:
-          pickle.dump(params, param_file)
+          dill.dump(params, param_file)
 
       # Show error graph
       ax = plt.gca()
@@ -186,6 +186,13 @@ def main():
       output = feedforward(imageToVector(image), params)[0] 
       print(output)
       print(f"Prediction: {output.argmax(axis=0)}")
+
+def make_prediction(X):
+  print(X)
+  with open(PARAM_FILE, 'rb') as param_file:
+    params = dill.load(param_file)
+
+  return feedforward(X, params)[0].argmax(axis=0)
 
 if __name__ == '__main__':
     main()
