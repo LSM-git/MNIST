@@ -1,6 +1,8 @@
 import kagglehub
 import shutil
-import os 
+import os, random
+
+TEST_SAMPLES = 10
 
 def main():
   if not os.path.exists("./train"):
@@ -14,6 +16,15 @@ def main():
     shutil.move(source, destination)
 
     shutil.rmtree("./1")
+
+    # Create a test folder
+    os.mkdir("./test")
+    for i in range(10):
+      os.mkdir(f"./test/{i}")
+      path = f"./train/{i}/"
+      for j in range(TEST_SAMPLES):
+        shutil.move(path + str(random.choice(os.listdir(path))), f"./test/{i}")
+
 
 if __name__ == '__main__':
   main()

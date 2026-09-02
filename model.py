@@ -187,6 +187,16 @@ def main():
       print(output)
       print(f"Prediction: {output.argmax(axis=0)}")
 
+    errors = 0
+    for label in os.listdir("./test/"):
+       for img in os.listdir(f"./test/{label}/"):
+          output = feedforward(imageToVector(f"./test/{label}/{img}"), params)[0]
+          if np.argmax(output) != int(label):
+             errors += 1
+
+    print(f"Model accuracy: {100 - errors}%")
+
+
 def make_prediction(X):
   print(X)
   with open(PARAM_FILE, 'rb') as param_file:
@@ -194,5 +204,4 @@ def make_prediction(X):
 
   return feedforward(X, params)[0].argmax(axis=0)
 
-if __name__ == '__main__':
-    main()
+main()
