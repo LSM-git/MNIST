@@ -1,0 +1,23 @@
+[project]
+name = "mnist"
+version = "0.1.0"
+description = "Simple mnist classifier developped from scratch using numPy"
+authors = [
+    {name = "Luis Saenz Molinero",email = "luis.saenz.mol@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "kagglehub (>=1.0.2,<2.0.0)",
+    "dill (>=0.4.1,<0.5.0)",
+    "numpy (>=2.5.2,<3.0.0)",
+    "matplotlib (>=3.11.1,<4.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+package-mode=false
