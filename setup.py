@@ -2,7 +2,7 @@ import kagglehub
 import shutil
 import os, random
 
-TEST_SAMPLES = 10
+TEST_SAMPLES = 100
 
 def main():
   if not os.path.exists("./train"):
